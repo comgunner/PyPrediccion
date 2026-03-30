@@ -242,9 +242,8 @@ PyPrediccionBybit/
 ├── requirements.txt        # Python dependencies
 ├── utils/
 │   └── config_manager.py   # Persistent configuration manager
-└── local_work/             # Local documentation and work
-    ├── plan_config_persistente.md
-    └── problemas_encontrados.md
+└── assets/                 # Images and screenshots
+    └── main_monitor.png
 ```
 
 ---
