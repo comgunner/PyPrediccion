@@ -52,6 +52,11 @@ class AplicacionPredictor:
             api_secret=self.config_manager.get("BYBIT_API_SECRET"),
         )
         self.analizador = AnalizadorDatos()
+
+        # Cargar modelos previamente entrenados si existen
+        if self.analizador.cargar_modelos(self.config_manager.models_dir):
+            print(f"Models loaded from: {self.config_manager.models_dir}")
+
         self.visualizador = Visualizador(modo_oscuro=self.modo_oscuro.get())
 
         # Variables de control
@@ -198,7 +203,7 @@ class AplicacionPredictor:
         symbol_combo = ttk.Combobox(
             control_frame, textvariable=self.symbol_var, width=10
         )
-        symbol_combo["values"] = (
+        symbol_combo["values"] = self.config_manager.get_symbols_list() or (
             "BTCUSDT",
             "ETHUSDT",
             "SOLUSDT",
@@ -630,6 +635,12 @@ class AplicacionPredictor:
                 )[:5]
                 for feature, importance in short_importance:
                     self.log(f"  {feature}: {importance:.4f}", "info")
+
+                # Guardar modelos para futuros inicios
+                if self.analizador.guardar_modelos(self.config_manager.models_dir):
+                    self.log(
+                        f"Modelos guardados en {self.config_manager.models_dir}", "info"
+                    )
             else:
                 messagebox.showerror("Error", f"Error al entrenar modelos: {result}")
                 self.status_var.set(f"Error: {result}")

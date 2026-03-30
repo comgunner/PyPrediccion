@@ -96,6 +96,11 @@ class ConfigManager:
         """Return absolute path to the configuration file."""
         return self.CONFIG_FILE
 
+    @property
+    def models_dir(self) -> Path:
+        """Return path to the directory where trained models are stored."""
+        return self.CONFIG_DIR / "models"
+
     def open_config_file(self) -> None:
         """Open the configuration file with the system default editor."""
         system = platform.system()

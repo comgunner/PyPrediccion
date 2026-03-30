@@ -4,7 +4,9 @@ Calcula indicadores técnicos y prepara los datos para el modelado predictivo.
 """
 
 from datetime import timedelta
+from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier
@@ -879,3 +881,42 @@ class AnalizadorDatos:
             "long_prob": 0.5,
             "short_prob": 0.5,
         }
+
+    def guardar_modelos(self, models_dir: Path) -> bool:
+        """Save trained models and scalers to disk using joblib."""
+        if self.model_long is None or self.model_short is None:
+            return False
+        try:
+            models_dir.mkdir(parents=True, exist_ok=True)
+            joblib.dump(self.model_long, models_dir / "model_long.joblib")
+            joblib.dump(self.model_short, models_dir / "model_short.joblib")
+            joblib.dump(self.scaler, models_dir / "scaler.joblib")
+            joblib.dump(self.mm_scaler, models_dir / "mm_scaler.joblib")
+            return True
+        except Exception as e:
+            print(f"Error saving models: {e}")
+            return False
+
+    def cargar_modelos(self, models_dir: Path) -> bool:
+        """Load trained models and scalers from disk if they exist."""
+        model_long_path = models_dir / "model_long.joblib"
+        model_short_path = models_dir / "model_short.joblib"
+        scaler_path = models_dir / "scaler.joblib"
+        mm_scaler_path = models_dir / "mm_scaler.joblib"
+
+        if not (
+            model_long_path.exists()
+            and model_short_path.exists()
+            and scaler_path.exists()
+        ):
+            return False
+        try:
+            self.model_long = joblib.load(model_long_path)
+            self.model_short = joblib.load(model_short_path)
+            self.scaler = joblib.load(scaler_path)
+            if mm_scaler_path.exists():
+                self.mm_scaler = joblib.load(mm_scaler_path)
+            return True
+        except Exception as e:
+            print(f"Error loading models: {e}")
+            return False
