@@ -323,7 +323,7 @@ class AnalizadorDatos:
         df_trades = pd.DataFrame(trades)
 
         # Convertir columnas numéricas (pueden venir como strings)
-        for col in ["price", "size"]:
+        for col in ["price", "size", "time"]:
             if col in df_trades.columns:
                 df_trades[col] = pd.to_numeric(df_trades[col], errors="coerce")
 
