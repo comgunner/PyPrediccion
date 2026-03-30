@@ -17,6 +17,7 @@ from analizador_datos import AnalizadorDatos
 
 # Importar módulos personalizados
 from bybit_api import BybitAPI
+from utils.config_manager import ConfigManager
 from visualizaciones import COLORES, Visualizador
 
 
@@ -34,19 +35,28 @@ class AplicacionPredictor:
         # Modo oscuro por defecto
         self.modo_oscuro = tk.BooleanVar(value=True)
 
-        # Crear instancias
-        self.api = BybitAPI()
-        self.analizador = AnalizadorDatos()
-        self.visualizador = Visualizador(modo_oscuro=self.modo_oscuro.get())
-
-        # Variables de control
+        # Variables de control de UI (deben existir antes de cargar configuración)
         self.api_key_var = tk.StringVar()
         self.api_secret_var = tk.StringVar()
         self.symbol_var = tk.StringVar(value="BTCUSDT")
         self.intervalo_var = tk.StringVar(value="15")
+        self.umbral_prob_var = tk.DoubleVar(value=0.65)
+
+        # Cargar configuración persistente
+        self.config_manager = ConfigManager()
+        self._cargar_configuracion_guardada()
+
+        # Crear instancias con credenciales desde configuración
+        self.api = BybitAPI(
+            api_key=self.config_manager.get("BYBIT_API_KEY"),
+            api_secret=self.config_manager.get("BYBIT_API_SECRET"),
+        )
+        self.analizador = AnalizadorDatos()
+        self.visualizador = Visualizador(modo_oscuro=self.modo_oscuro.get())
+
+        # Variables de control
         self.monitoreo_activo = False
         self.thread_monitoreo = None
-        self.umbral_prob_var = tk.DoubleVar(value=0.65)
 
         # Datos para visualizaciones
         self.df_actual = None
@@ -102,6 +112,20 @@ class AplicacionPredictor:
         # Actualizar visualizador
         if hasattr(self, "visualizador"):
             self.visualizador = Visualizador(modo_oscuro=self.modo_oscuro.get())
+
+    def _cargar_configuracion_guardada(self):
+        """Populate UI variables from persisted configuration."""
+        self.api_key_var.set(self.config_manager.get("BYBIT_API_KEY", ""))
+        self.api_secret_var.set(self.config_manager.get("BYBIT_API_SECRET", ""))
+        symbols = self.config_manager.get_symbols_list()
+        self.symbol_var.set(symbols[0] if symbols else "BTCUSDT")
+        self.intervalo_var.set(self.config_manager.get("INTERVAL", "15"))
+        self.umbral_prob_var.set(self.config_manager.get("PROBABILITY_THRESHOLD", 0.65))
+        self.modo_oscuro.set(self.config_manager.get("DARK_MODE", True))
+        print(f"Config loaded from: {self.config_manager.config_path}")
+        print(
+            f"API configured: {'yes' if self.config_manager.is_configured() else 'no'}"
+        )
 
     def setup_ui(self):
         """Configuración de la interfaz gráfica."""
@@ -322,6 +346,13 @@ class AplicacionPredictor:
             command=self.guardar_configuracion,
         ).pack(side=tk.LEFT, padx=5)
 
+        # Botón para abrir archivo de configuración
+        ttk.Button(
+            button_frame,
+            text="Abrir Config",
+            command=self.abrir_archivo_config,
+        ).pack(side=tk.LEFT, padx=5)
+
         # Botón para probar conexión
         ttk.Button(
             button_frame, text="Probar Conexión", command=self.probar_conexion
@@ -481,22 +512,41 @@ class AplicacionPredictor:
         self.root.after(1000, self.update_hora_actual)
 
     def guardar_configuracion(self):
-        """Guarda la configuración de API y modelo."""
+        """Save API credentials and model settings to persistent configuration."""
         api_key = self.api_key_var.get().strip()
         api_secret = self.api_secret_var.get().strip()
 
-        # Actualizar instancias con las claves API
-        self.api.api_key = api_key
-        self.api.api_secret = api_secret
+        self.config_manager.set("BYBIT_API_KEY", api_key)
+        self.config_manager.set("BYBIT_API_SECRET", api_secret)
+        self.config_manager.set("SYMBOL", self.symbol_var.get())
+        self.config_manager.set("INTERVAL", self.intervalo_var.get())
+        self.config_manager.set("PROBABILITY_THRESHOLD", self.umbral_prob_var.get())
+        self.config_manager.set("DARK_MODE", self.modo_oscuro.get())
 
-        # Actualizar umbral de probabilidad
-        self.analizador.umbral_prob = self.umbral_prob_var.get()
+        if self.config_manager.save():
+            self.api.api_key = api_key
+            self.api.api_secret = api_secret
+            self.analizador.umbral_prob = self.umbral_prob_var.get()
+            messagebox.showinfo(
+                "Configuración",
+                f"Configuración guardada correctamente\n\nRuta: {self.config_manager.config_path}",
+            )
+            self.status_var.set(
+                f"Config guardada. Par: {self.symbol_var.get()}, Intervalo: {self.intervalo_var.get()}"
+            )
+            self.log("Configuración guardada correctamente", "success")
+            self.log(f"Ruta: {self.config_manager.config_path}", "info")
+        else:
+            messagebox.showerror("Error", "No se pudo guardar la configuración")
+            self.log("Error al guardar configuración", "error")
 
-        messagebox.showinfo("Configuración", "Configuración guardada correctamente")
-        self.status_var.set(
-            f"Configuración guardada. Par: {self.symbol_var.get()}, Intervalo: {self.intervalo_var.get()}"
+    def abrir_archivo_config(self):
+        """Open the configuration file using the system default editor."""
+        self.config_manager.open_config_file()
+        self.log(
+            f"Abriendo archivo de configuración: {self.config_manager.config_path}",
+            "info",
         )
-        self.log("Configuración guardada correctamente", "success")
 
     def probar_conexion(self):
         """Prueba la conexión a la API de Bybit."""

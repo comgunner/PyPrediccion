@@ -4,6 +4,33 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-03-29 — Persistent Configuration
+
+### Added
+
+- **`utils/config_manager.py` — ConfigManager class**
+  New module that persists user configuration to `~/.pyprediccion/config.json`.
+  Cross-platform path resolution (Windows `%USERPROFILE%`, Linux/macOS `$HOME`).
+  On first run, creates the directory and config file with safe defaults.
+  Subsequent runs load saved credentials and preferences automatically.
+
+- **`app_principal.py` — auto-load on startup**
+  Integrated ConfigManager into `AplicacionPredictor.__init__`.
+  API keys, symbol, interval, probability threshold, and dark mode preference
+  are restored from disk at startup — no manual entry required on every launch.
+
+- **`app_principal.py` — persistent save**
+  `guardar_configuracion()` now writes all settings to `~/.pyprediccion/config.json`
+  in addition to updating in-memory state. Config path shown in confirmation dialog.
+
+- **`app_principal.py` — "Abrir Config" button**
+  New button in the Configuración tab opens `~/.pyprediccion/config.json` with the
+  system default editor (Notepad on Windows, TextEdit/default on macOS, xdg-open on Linux).
+
+- **`config.json.example`** — reference template for manual configuration.
+
+---
+
 ## 2026-03-29
 
 ### Fixed
