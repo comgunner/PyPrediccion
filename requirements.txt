@@ -1,5 +1,5 @@
 # ===========================================
-# Requirements - PyPrediccionBybit
+# Requirements - Heat Predictor - Trading Prediction System
 # ===========================================
 # Python trading prediction system for Bybit exchange
 # https://www.youtube.com/watch?v=163yPGvqQ

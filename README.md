@@ -1,12 +1,14 @@
-# PyPrediccionBybit 🚀
+# Heat Predictor - Trading Prediction System 🚀
 
-Machine Learning-based market prediction system for Bybit - **Completely Free**
+Machine Learning-based market prediction system for multi-exchange trading - **Completely Free**
+
+![Main Monitor](assets/main_monitor.png)
 
 ---
 
 ## 🎯 Description
 
-PyPrediccionBybit is an algorithmic trading system that combines:
+Heat Predictor - Trading Prediction System is an algorithmic trading system that combines:
 
 - ✅ **Advanced technical analysis** with custom indicators
 - ✅ **Real-time order book analysis**
@@ -142,7 +144,7 @@ pip install -r requirements.txt
 - `pandas` - Data manipulation
 - `numpy` - Numerical computing
 - `seaborn` - Statistical visualizations
-- `requests` - Bybit API connection
+- `requests` - Exchange API connection
 - `pytz` - Timezone handling
 - `scikit-learn` - Machine Learning (Gradient Boosting)
 
@@ -158,17 +160,19 @@ python app_principal.py
 
 ---
 
-### Step 2: Configure Bybit API
+### Step 2: Configure Exchange API
 
 1. **Go to the "Configuración" tab** in the GUI
 
 2. **Add API Key:**
-   - Enter your Bybit **API Key**
-   - Enter your Bybit **API Secret**
+   - Enter your exchange **API Key**
+   - Enter your exchange **API Secret**
 
 3. **Press "Guardar Configuración"**
    - ✅ Configuration is saved permanently
-   - 📁 Location: `~/.pyprediccion/config.json`
+   - 📁 Location:
+     - **Windows:** `%USERPROFILE%\.pyprediccion\config.json`
+     - **Linux/macOS:** `~/.pyprediccion/config.json`
    - 🔒 You don't need to re-enter credentials
 
 ---
@@ -187,7 +191,7 @@ python app_principal.py
 ### Step 4: Update Pairs
 
 1. **Press "Actualizar Pares"**
-   - 🔄 Loads list of available pairs on Bybit
+   - 🔄 Loads list of available pairs on exchange
    - 📈 Shows: "Lista de pares actualizada, XX pares disponibles"
 
 ---
@@ -231,7 +235,7 @@ The system is designed for:
 ```
 PyPrediccionBybit/
 ├── app_principal.py        # Main application (GUI)
-├── bybit_api.py            # Bybit API connection
+├── bybit_api.py            # Exchange API connection
 ├── analizador_datos.py     # Data analysis and indicators
 ├── visualizaciones.py      # Graphs and visualizations
 ├── test_qa.py              # Automated QA tests
@@ -295,7 +299,7 @@ python test_qa.py
 ## 🔒 Security
 
 - 🔐 **API Keys:** Saved encrypted in `~/.pyprediccion/config.json`
-- 🚫 **Not shared:** Credentials only sent to Bybit
+- 🚫 **Not shared:** Credentials only sent to exchange
 - 👁️ **Masked:** API Secret shown as `****` in UI
 - 📁 **Permissions:** Recommended `chmod 600` on Linux/macOS
 
@@ -311,14 +315,14 @@ pip install matplotlib pandas numpy seaborn
 
 ### Error: "Invalid API Key"
 
-1. Verify credentials are correct in Bybit
+1. Verify credentials are correct on exchange
 2. Make sure you have **Read** permissions on the API
 3. Save configuration again
 
 ### Error: "No data available"
 
 1. Check your internet connection
-2. Make sure the trading pair exists on Bybit
+2. Make sure the trading pair exists on exchange
 3. Press "Actualizar Pares" again
 
 ### Application closes immediately
@@ -360,7 +364,9 @@ This is a fork maintained and improved by **comgunner**:
 
 - **Fork Repository:** [github.com/comgunner/PyPrediccion](https://github.com/comgunner/PyPrediccion)
 - **Implemented Improvements:**
-  - ✅ Persistent configuration (`~/.pyprediccion/config.json`)
+  - ✅ Persistent configuration
+    - Windows: `%USERPROFILE%\.pyprediccion\config.json`
+    - Linux/macOS: `~/.pyprediccion/config.json`
   - ✅ Multi-platform support (Windows, Linux, macOS)
   - ✅ Automated QA tests
   - ✅ Complete documentation

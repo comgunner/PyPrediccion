@@ -46,11 +46,14 @@ class BybitAPI:
         ).hexdigest()
         return signature
 
-    def obtener_datos_mercado(self, symbol, intervalo="15", limit=200):
+    def obtener_datos_mercado(
+        self, symbol, intervalo="15", limit=200, category="linear"
+    ):
         """Obtiene datos históricos del mercado usando la API de Bybit."""
         endpoint = "/v5/market/kline"
         params = {
             "symbol": symbol,
+            "category": category,
             "interval": intervalo,
             "limit": limit,
             "timestamp": int(time.time() * 1000),
@@ -76,10 +79,10 @@ class BybitAPI:
             print(f"Error en la petición: {response.status_code}")
             return None
 
-    def obtener_book_orders(self, symbol, limit=50):
+    def obtener_book_orders(self, symbol, limit=50, category="linear"):
         """Obtiene el order book para un símbolo específico."""
         endpoint = "/v5/market/orderbook"
-        params = {"symbol": symbol, "limit": limit}
+        params = {"symbol": symbol, "limit": limit, "category": category}
 
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
 
@@ -94,10 +97,10 @@ class BybitAPI:
             print(f"Error en la petición: {response.status_code}")
             return None
 
-    def obtener_trades_recientes(self, symbol, limit=50):
+    def obtener_trades_recientes(self, symbol, limit=50, category="linear"):
         """Obtiene trades recientes para un símbolo específico."""
         endpoint = "/v5/market/recent-trade"
-        params = {"symbol": symbol, "limit": limit}
+        params = {"symbol": symbol, "limit": limit, "category": category}
 
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
 
@@ -130,10 +133,10 @@ class BybitAPI:
             print(f"Error en la petición: {response.status_code}")
             return None
 
-    def obtener_funding_rate(self, symbol, limit=50):
+    def obtener_funding_rate(self, symbol, limit=50, category="linear"):
         """Obtiene el funding rate de un símbolo."""
         endpoint = "/v5/market/funding/history"
-        params = {"symbol": symbol, "limit": limit}
+        params = {"symbol": symbol, "limit": limit, "category": category}
 
         response = requests.get(f"{self.base_url}{endpoint}", params=params)
 

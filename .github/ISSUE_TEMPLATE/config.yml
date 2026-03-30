@@ -1,10 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://github.com/comgunner/GIT_CLONE/tree/main/PyPrediccionBybit/QWEN.md
+    url: https://github.com/comgunner/PyPrediccion/blob/main/QWEN.md
     about: Check QWEN.md for project documentation and setup guide
   - name: 💬 Questions & Discussions
-    url: https://github.com/comgunner/GIT_CLONE/discussions
+    url: https://github.com/comgunner/PyPrediccion/discussions
     about: Use GitHub Discussions for questions and general discussions
   - name: 📹 Video Tutorial
     url: https://www.youtube.com/watch?v=163yPGvqQ

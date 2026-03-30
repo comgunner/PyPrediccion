@@ -1,5 +1,5 @@
 # ===========================================
-# Development Requirements - PyPrediccionBybit
+# Development Requirements - Heat Predictor - Trading Prediction System
 # ===========================================
 # Additional dependencies for development and testing
 #

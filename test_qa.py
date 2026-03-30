@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Script de QA automatizado para PyPrediccionBybit.
+"""Automated QA test suite for Heat Predictor - Trading Prediction System.
 
-Prueba todas las funcionalidades críticas sin interfaz gráfica.
-Ejecutar: python test_qa.py
+Tests all critical functionality without GUI.
+Run: python test_qa.py
 """
 
 import sys
 import traceback
 
-# Mock de tkinter para evitar errores en headless
+# Mock tkinter to avoid headless errors
 import unittest.mock as mock
 from datetime import datetime
 
@@ -17,7 +17,7 @@ sys.modules["matplotlib.backends.backend_tkagg"] = mock.MagicMock()
 
 import numpy as np  # noqa: E402
 
-# Importar módulos a testear
+# Import modules to test
 from analizador_datos import AnalizadorDatos  # noqa: E402
 from bybit_api import BybitAPI  # noqa: E402
 from visualizaciones import Visualizador  # noqa: E402
@@ -47,9 +47,9 @@ class TestResults:
         """Print summary and return True if all tests passed."""
         total = self.passed + self.failed
         print(f"\n{'=' * 60}")
-        print(f"RESUMEN: {self.passed}/{total} tests passed")
+        print(f"SUMMARY: {self.passed}/{total} tests passed")
         if self.errors:
-            print("\nErrores:")
+            print("\nErrors:")
             for name, error in self.errors:
                 print(f"  - {name}: {error}")
         print(f"{'=' * 60}")
@@ -60,13 +60,13 @@ results = TestResults()
 
 
 def test_timestamp_conversion():
-    """Test 1: Conversión de timestamps."""
+    """Test 1: Timestamp conversion from API strings to datetime."""
     test_name = "Timestamp Conversion"
     try:
         BybitAPI()  # noqa: F841
         analizador = AnalizadorDatos()
 
-        # Simular datos de API con timestamps futuros (2026)
+        # Simulate API data with future timestamps (2026)
         kline_data = [
             [
                 "1774830000000",
@@ -99,12 +99,12 @@ def test_timestamp_conversion():
 
         df = analizador.procesar_klines(kline_data)
 
-        assert df is not None, "DataFrame no debería ser None"
-        assert len(df) == 3, f"Debería tener 3 filas, tiene {len(df)}"
-        assert "datetime" in df.columns, "Debería tener columna datetime"
-        # Verificar que datetime es timezone-aware (pandas 3.0+ usa UTC por defecto)
+        assert df is not None, "DataFrame should not be None"
+        assert len(df) == 3, f"Should have 3 rows, has {len(df)}"
+        assert "datetime" in df.columns, "Should have datetime column"
+        # Verify datetime is timezone-aware (pandas 3.0+ uses UTC by default)
         assert "datetime64" in str(df["datetime"].dtype), (
-            "datetime debería ser datetime64"
+            "datetime should be datetime64"
         )
 
         results.add_pass(test_name)
@@ -113,12 +113,12 @@ def test_timestamp_conversion():
 
 
 def test_numeric_conversion():
-    """Test 2: Conversión de strings a numéricos."""
+    """Test 2: String to numeric conversion."""
     test_name = "Numeric Conversion"
     try:
         analizador = AnalizadorDatos()
 
-        # Datos con strings (como vienen de la API)
+        # Data with strings (as they come from API)
         kline_data = [
             [
                 "1774830000000",
@@ -143,10 +143,10 @@ def test_numeric_conversion():
         df = analizador.procesar_klines(kline_data)
 
         assert df["close"].dtype in ["float64", "float32"], (
-            f"close debería ser float, es {df['close'].dtype}"
+            f"close should be float, is {df['close'].dtype}"
         )
         assert df["volume"].dtype in ["float64", "float32"], (
-            f"volume debería ser float, es {df['volume'].dtype}"
+            f"volume should be float, is {df['volume'].dtype}"
         )
 
         results.add_pass(test_name)
@@ -155,12 +155,12 @@ def test_numeric_conversion():
 
 
 def test_indicator_calculation():
-    """Test 3: Cálculo de indicadores técnicos."""
+    """Test 3: Technical indicator calculation."""
     test_name = "Indicator Calculation"
     try:
         analizador = AnalizadorDatos()
 
-        # Generar datos suficientes para indicadores (mínimo 100)
+        # Generate enough data for indicators (minimum 100)
         np.random.seed(42)
         n = 200
         timestamps = list(range(1774830000000, 1774830000000 + n * 900000, 900000))
@@ -189,20 +189,18 @@ def test_indicator_calculation():
         df = analizador.procesar_klines(kline_data)
         df_ind = analizador.calcular_indicadores(df)
 
-        assert df_ind is not None, "DataFrame con indicadores no debería ser None"
-        assert len(df_ind) > 0, "Debería tener datos después de dropna"
+        assert df_ind is not None, "DataFrame with indicators should not be None"
+        assert len(df_ind) > 0, "Should have data after dropna"
 
-        # Verificar indicadores clave
+        # Verify key indicators
         required_cols = ["rsi", "macd", "bb_upper", "bb_lower", "ma7", "ma21"]
         for col in required_cols:
-            assert col in df_ind.columns, f"Falta indicador: {col}"
+            assert col in df_ind.columns, f"Missing indicator: {col}"
 
-        # Verificar que RSI está en rango válido
+        # Verify RSI is in valid range
         rsi_valid = df_ind["rsi"].dropna()
-        assert rsi_valid.min() >= 0, f"RSI mínimo {rsi_valid.min()} debería ser >= 0"
-        assert rsi_valid.max() <= 100, (
-            f"RSI máximo {rsi_valid.max()} debería ser <= 100"
-        )
+        assert rsi_valid.min() >= 0, f"RSI minimum {rsi_valid.min()} should be >= 0"
+        assert rsi_valid.max() <= 100, f"RSI maximum {rsi_valid.max()} should be <= 100"
 
         results.add_pass(test_name)
     except Exception as e:
@@ -210,12 +208,12 @@ def test_indicator_calculation():
 
 
 def test_model_training():
-    """Test 4: Entrenamiento de modelos."""
+    """Test 4: Model training."""
     test_name = "Model Training"
     try:
         analizador = AnalizadorDatos()
 
-        # Generar datos suficientes para entrenar
+        # Generate enough data for training
         np.random.seed(42)
         n = 200
         timestamps = list(range(1774830000000, 1774830000000 + n * 900000, 900000))
@@ -246,11 +244,11 @@ def test_model_training():
 
         success, result = analizador.entrenar_modelos(df_ind)
 
-        assert success, f"Entrenamiento debería tener éxito: {result}"
-        assert "long_metrics" in result, "Resultado debería tener long_metrics"
-        assert "short_metrics" in result, "Resultado debería tener short_metrics"
-        assert analizador.model_long is not None, "model_long debería estar entrenado"
-        assert analizador.model_short is not None, "model_short debería estar entrenado"
+        assert success, f"Training should succeed: {result}"
+        assert "long_metrics" in result, "Result should have long_metrics"
+        assert "short_metrics" in result, "Result should have short_metrics"
+        assert analizador.model_long is not None, "model_long should be trained"
+        assert analizador.model_short is not None, "model_short should be trained"
 
         results.add_pass(test_name)
     except Exception as e:
@@ -258,12 +256,12 @@ def test_model_training():
 
 
 def test_prediction_generation():
-    """Test 5: Generación de predicciones."""
+    """Test 5: Prediction generation."""
     test_name = "Prediction Generation"
     try:
         analizador = AnalizadorDatos()
 
-        # Generar datos y entrenar
+        # Generate data and train
         np.random.seed(42)
         n = 200
         timestamps = list(range(1774830000000, 1774830000000 + n * 900000, 900000))
@@ -293,7 +291,7 @@ def test_prediction_generation():
         df_ind = analizador.calcular_indicadores(df)
         analizador.entrenar_modelos(df_ind)
 
-        # Generar predicción
+        # Generate prediction
         order_book = {
             "a": [["42100", "10"], ["42110", "20"]],
             "b": [["42090", "15"], ["42080", "25"]],
@@ -308,13 +306,13 @@ def test_prediction_generation():
             df_ind, order_book_metrics, trade_metrics
         )
 
-        assert success, f"Predicción debería tener éxito: {prediccion}"
-        assert "decision" in prediccion, "Predicción debería tener 'decision'"
+        assert success, f"Prediction should succeed: {prediccion}"
+        assert "decision" in prediccion, "Prediction should have 'decision'"
         assert prediccion["decision"] in ["LONG", "SHORT", "NEUTRAL"], (
-            f"Decisión inválida: {prediccion['decision']}"
+            f"Invalid decision: {prediccion['decision']}"
         )
-        assert "long_probability" in prediccion, "Debería tener long_probability"
-        assert "short_probability" in prediccion, "Debería tener short_probability"
+        assert "long_probability" in prediccion, "Should have long_probability"
+        assert "short_probability" in prediccion, "Should have short_probability"
 
         results.add_pass(test_name)
     except Exception as e:
@@ -322,17 +320,17 @@ def test_prediction_generation():
 
 
 def test_visualization_creation():
-    """Test 6: Creación de visualizaciones."""
+    """Test 6: Visualization creation."""
     test_name = "Visualization Creation"
     try:
         import matplotlib
 
-        matplotlib.use("Agg")  # Backend no interactivo
+        matplotlib.use("Agg")  # Non-interactive backend
         import matplotlib.pyplot as plt
 
         visualizador = Visualizador(modo_oscuro=True)
 
-        # Generar datos mínimos
+        # Generate minimal data
         np.random.seed(42)
         n = 50
         timestamps = list(range(1774830000000, 1774830000000 + n * 900000, 900000))
@@ -361,12 +359,12 @@ def test_visualization_creation():
         analizador = AnalizadorDatos()
         df = analizador.procesar_klines(kline_data)
 
-        # Crear figura
+        # Create figure
         fig = plt.figure(figsize=(10, 6))
         fig = visualizador.crear_grafico_precios(fig, df, titulo="Test")
 
-        assert fig is not None, "Figura no debería ser None"
-        assert len(fig.axes) > 0, "Figura debería tener ejes"
+        assert fig is not None, "Figure should not be None"
+        assert len(fig.axes) > 0, "Figure should have axes"
 
         plt.close(fig)
         results.add_pass(test_name)
@@ -375,12 +373,12 @@ def test_visualization_creation():
 
 
 def test_math_operations_with_strings():
-    """Test 7: Operaciones matemáticas con datos string (como vienen de API)."""
+    """Test 7: Math operations with string data (as they come from API)."""
     test_name = "Math Operations with Strings"
     try:
         analizador = AnalizadorDatos()
 
-        # Datos como vienen de la API (todos strings)
+        # Data as it comes from API (all strings)
         n = 100
         timestamps = list(range(1774830000000, 1774830000000 + n * 900000, 900000))
         closes = np.cumsum(np.random.randn(n) * 100) + 42000
@@ -393,7 +391,7 @@ def test_math_operations_with_strings():
             low = min(open_p, close) - abs(np.random.randn() * 30)
             volume = np.random.randint(50, 200)
             turnover = volume * close
-            # TODOS los datos como STRINGS (como viene de la API)
+            # ALL data as STRINGS (as it comes from API)
             kline_data.append(
                 [
                     str(ts),
@@ -406,22 +404,20 @@ def test_math_operations_with_strings():
                 ]
             )
 
-        # Procesar klines
+        # Process klines
         df = analizador.procesar_klines(kline_data)
 
-        # Calcular indicadores - esto falla si hay strings
+        # Calculate indicators - this fails if there are strings
         df_ind = analizador.calcular_indicadores(df)
 
-        assert df_ind is not None, "Indicadores deberían calcularse"
-        assert "rsi" in df_ind.columns, "Debería tener RSI"
-        assert "macd" in df_ind.columns, "Debería tener MACD"
+        assert df_ind is not None, "Indicators should calculate"
+        assert "rsi" in df_ind.columns, "Should have RSI"
+        assert "macd" in df_ind.columns, "Should have MACD"
 
-        # Verificar que no haya NaN excesivos
+        # Verify no excessive NaN
         nan_count = df_ind.isnull().sum().sum()
         total_cells = df_ind.size
-        assert nan_count / total_cells < 0.5, (
-            f"Demasiados NaN: {nan_count}/{total_cells}"
-        )
+        assert nan_count / total_cells < 0.5, f"Too many NaN: {nan_count}/{total_cells}"
 
         results.add_pass(test_name)
     except Exception as e:
@@ -429,12 +425,12 @@ def test_math_operations_with_strings():
 
 
 def test_overflow_handling():
-    """Test 8: Manejo de overflow de timestamps."""
+    """Test 8: Timestamp overflow handling."""
     test_name = "Overflow Handling"
     try:
         analizador = AnalizadorDatos()
 
-        # Timestamps que causarían overflow sin el fix
+        # Timestamps that would cause overflow without the fix
         kline_data = [
             [
                 "1774830000000",
@@ -458,8 +454,8 @@ def test_overflow_handling():
 
         df = analizador.procesar_klines(kline_data)
 
-        assert df is not None, "Debería manejar timestamps futuros"
-        assert len(df) > 0, "Debería tener datos válidos"
+        assert df is not None, "Should handle future timestamps"
+        assert len(df) > 0, "Should have valid data"
 
         results.add_pass(test_name)
     except Exception as e:
@@ -469,12 +465,12 @@ def test_overflow_handling():
 def main():
     """Run all QA tests and print a summary."""
     print("=" * 60)
-    print("QA AUTOMATIZADO - PyPrediccionBybit")
-    print(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("AUTOMATED QA - Heat Predictor - Trading Prediction System")
+    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     print()
 
-    # Ejecutar todos los tests
+    # Run all tests
     test_timestamp_conversion()
     test_numeric_conversion()
     test_indicator_calculation()
@@ -484,7 +480,7 @@ def main():
     test_math_operations_with_strings()
     test_overflow_handling()
 
-    # Resumen
+    # Summary
     success = results.summary()
 
     sys.exit(0 if success else 1)

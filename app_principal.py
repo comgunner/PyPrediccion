@@ -27,7 +27,7 @@ class AplicacionPredictor:
     def __init__(self, root):
         """Inicializa la aplicación y configura la interfaz gráfica principal."""
         self.root = root
-        self.root.title("Bybit Heat Predictor - Sistema de Predicción de Trading")
+        self.root.title("Heat Predictor - Trading Prediction System")
         self.root.geometry("1200x800")
         self.root.configure(bg="#F0F0F0")  # Color de fondo
         self.root.resizable(True, True)

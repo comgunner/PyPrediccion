@@ -1,4 +1,4 @@
-"""Config manager for PyPrediccionBybit — persists settings to ~/.pyprediccion/config.json."""
+"""Config manager for Heat Predictor - Trading Prediction System — persists settings to ~/.pyprediccion/config.json."""
 
 import json
 import os
@@ -9,7 +9,7 @@ from typing import Any
 
 
 class ConfigManager:
-    """Persistent configuration manager for PyPrediccionBybit."""
+    """Persistent configuration manager for Heat Predictor - Trading Prediction System."""
 
     CONFIG_DIR = Path.home() / ".pyprediccion"
     CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -39,10 +39,29 @@ class ConfigManager:
             print(f"{'=' * 60}\n")
         self._load()
 
+    def _build_first_run_config(self) -> dict:
+        """Build initial config from config.json.example if available, else DEFAULT_CONFIG."""
+        example_path = Path(__file__).parent.parent / "config.json.example"
+        try:
+            with open(example_path, encoding="utf-8") as f:
+                example = json.load(f)
+            config = self.DEFAULT_CONFIG.copy()
+            for key, value in example.items():
+                if key.startswith("_"):
+                    continue
+                if key in ("BYBIT_API_KEY", "BYBIT_API_SECRET"):
+                    config[key] = ""
+                else:
+                    config[key] = value
+            return config
+        except (OSError, json.JSONDecodeError):
+            return self.DEFAULT_CONFIG.copy()
+
     def _save_default(self):
-        """Write default configuration to disk."""
+        """Write first-run configuration to disk, seeding from config.json.example."""
+        config = self._build_first_run_config()
         with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(self.DEFAULT_CONFIG, f, indent=4, ensure_ascii=False)
+            json.dump(config, f, indent=4, ensure_ascii=False)
 
     def _load(self):
         """Load configuration from JSON file, merging missing keys with defaults."""
