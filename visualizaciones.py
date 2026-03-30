@@ -83,6 +83,11 @@ class Visualizador:
         if df is None or df.empty:
             return fig
 
+        # Validación defensiva: asegurar tipos numéricos en columnas de precio
+        for col in ["open", "high", "low", "close", "volume"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+
         # Asegurarse de tener columna datetime
         if "datetime" not in df.columns:
             try:
@@ -814,6 +819,11 @@ class Visualizador:
         if df is None or df.empty:
             return fig
 
+        # Validación defensiva: asegurar tipos numéricos en columnas de precio
+        for col in ["open", "high", "low", "close", "volume"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+
         # Asegurarse de tener columna datetime
         if "datetime" not in df.columns and "timestamp" in df.columns:
             try:
@@ -1066,6 +1076,11 @@ class Visualizador:
         """
         if df is None or df.empty:
             return fig
+
+        # Validación defensiva: asegurar tipos numéricos en columnas de precio e indicadores
+        for col in ["open", "high", "low", "close", "volume", "macd_hist"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
 
         if indicadores_mostrar is None:
             indicadores_mostrar = ["rsi", "macd", "stoch_k"]
