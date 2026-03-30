@@ -16,7 +16,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from analizador_datos import AnalizadorDatos
 
 # Importar módulos personalizados
-from bybit_api import BybitAPI
+from bybit_api import BybitAPI, SymbolInvalidError
 from utils.config_manager import ConfigManager
 from visualizaciones import COLORES, Visualizador
 
@@ -553,6 +553,53 @@ class AplicacionPredictor:
             "info",
         )
 
+    def _eliminar_simbolo_invalido(self, symbol: str) -> None:
+        """Remove an invalid symbol from config and switch to the next available one."""
+        self.log(
+            f"Símbolo no disponible en Bybit: {symbol} — eliminado del config",
+            "warning",
+        )
+
+        symbols = self.config_manager.get_symbols_list()
+        symbols = [s for s in symbols if s != symbol]
+
+        if symbols:
+            self.config_manager.set("SYMBOL", ",".join(symbols))
+            self.config_manager.save()
+
+            # Actualizar dropdown con la lista limpia
+            next_symbol = symbols[0]
+            self.symbol_var.set(next_symbol)
+
+            # Actualizar valores del combobox
+            for widget in self.root.winfo_children():
+                self._update_symbol_combo(widget, symbols)
+
+            self.status_var.set(f"'{symbol}' eliminado. Usando: {next_symbol}")
+            self.log(f"Cambiando a {next_symbol}", "info")
+        else:
+            self.config_manager.set("SYMBOL", "BTCUSDT")
+            self.config_manager.save()
+            self.symbol_var.set("BTCUSDT")
+            self.status_var.set(
+                f"'{symbol}' eliminado. Sin símbolos válidos, usando BTCUSDT"
+            )
+            self.log(
+                "No quedan símbolos válidos en config, usando BTCUSDT por defecto",
+                "warning",
+            )
+
+    def _update_symbol_combo(self, widget, symbols: list) -> None:
+        """Recursively update symbol Combobox values in widget tree."""
+        from tkinter import ttk as _ttk
+
+        if isinstance(widget, _ttk.Combobox) and "BTCUSDT" in str(
+            widget.cget("values")
+        ):
+            widget["values"] = symbols
+        for child in widget.winfo_children():
+            self._update_symbol_combo(child, symbols)
+
     def probar_conexion(self):
         """Prueba la conexión a la API de Bybit."""
         self.status_var.set("Probando conexión...")
@@ -762,6 +809,9 @@ class AplicacionPredictor:
                 self.log(f"Último precio: {ultimo_precio:.4f}", "info")
 
             return True
+        except SymbolInvalidError as e:
+            self._eliminar_simbolo_invalido(str(e).split(":")[0])
+            return False
         except Exception as e:
             messagebox.showerror("Error", f"Error al actualizar datos: {str(e)}")
             self.status_var.set(f"Error: {str(e)}")

@@ -12,6 +12,10 @@ import pytz
 import requests
 
 
+class SymbolInvalidError(Exception):
+    """Raised when Bybit reports that a symbol does not exist or is not supported."""
+
+
 class BybitAPI:
     """Clase para manejar las comunicaciones con la API de Bybit."""
 
@@ -63,7 +67,10 @@ class BybitAPI:
             if data["retCode"] == 0:
                 return data["result"]["list"]
             else:
-                print(f"Error al obtener datos: {data['retMsg']}")
+                msg = data.get("retMsg", "")
+                if "Symbol Is Invalid" in msg or "not support" in msg.lower():
+                    raise SymbolInvalidError(f"{symbol}: {msg}")
+                print(f"Error al obtener datos: {msg}")
                 return None
         else:
             print(f"Error en la petición: {response.status_code}")
