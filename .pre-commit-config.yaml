@@ -1,0 +1,77 @@
+# ===========================================
+# Pre-commit Configuration - PyPrediccionBybit
+# ===========================================
+# Python trading prediction system for Bybit exchange
+# https://www.youtube.com/watch?v=163yPGvqQ
+#
+# Install: pip install pre-commit && pre-commit install
+# Run: pre-commit run --all-files
+# Run (specific file): pre-commit run --files app_principal.py
+# ===========================================
+
+repos:
+  # 1. Secret Detection (Security)
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        description: Detects high entropy strings that are likely secrets (API keys, tokens, etc.)
+        args:
+          - --exclude-files
+          - '(^|/)(requirements\.txt|\.pre-commit-config\.yaml|bybit_api\.py|README\.md|docs/.*)$'
+          - --exclude-lines
+          - 'YOUR_.*_KEY|YOUR_.*_TOKEN|sk-[EXAMPLE]+|EXAMPLE_.*|API_KEY|API_SECRET|_PASSWORD|api_key_var|api_secret_var'
+
+  # 2. General File Validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Whitespace & Formatting
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        exclude: '\.(md|txt)$'
+      - id: end-of-file-fixer
+        name: Fix End of File
+        exclude: '\.(png|jpg|jpeg|gif|ico)$'
+      - id: check-merge-conflict
+        name: Check Merge Conflicts
+
+      # File Validation
+      - id: check-yaml
+        name: Validate YAML
+        args: ['--unsafe']
+      - id: check-json
+        name: Validate JSON
+      - id: check-toml
+        name: Validate TOML
+
+      # Security & Size
+      - id: check-added-large-files
+        name: Check Large Files
+        args: ['--maxkb=5000']
+      - id: detect-private-key
+        name: Detect Private Keys
+      - id: check-case-conflict
+        name: Check Case Conflicts
+
+  # 3. Python Linting & Formatting (Ruff)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.0
+    hooks:
+      - id: ruff
+        name: Ruff Linter
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+          - --select
+          - E,F,W,I,N,D,UP,B,C4,SIM,PERF
+          - --ignore
+          - E501,D100,D104,D203,D213
+          - --target-version
+          - py38
+      - id: ruff-format
+        name: Ruff Formatter
+        args:
+          - --target-version
+          - py38

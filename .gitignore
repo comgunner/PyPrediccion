@@ -1,0 +1,140 @@
+# ===========================================
+# .gitignore - PyPrediccionBybit
+# ===========================================
+# Python trading prediction system for Bybit exchange
+# https://www.youtube.com/watch?v=163yPGvqQ
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.manifest
+*.spec
+
+# --- Virtual Environments ---
+.venv/
+venv/
+ENV/
+env/
+pyvenv.cfg
+
+# --- IDE / Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.spyder-py3/
+.vs/
+*.code-workspace
+
+# --- OS Files ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# --- Cache & Temp Files ---
+*.cache
+*.tmp
+*.swp
+*.swo
+*~
+
+# --- Environment & Secrets ---
+.env
+.env.*
+!.env.example
+*.log
+secrets.py
+auth.json
+api_key.json
+config.json
+
+# --- Generated Data & Output ---
+output/
+data/
+!output/.gitkeep
+!data/.gitkeep
+*.csv
+*.xlsx
+*.parquet
+
+# --- AI Agent Context Files ---
+CLAUDE.md
+GEMINI.md
+QWEN.md
+REFACTORING.md
+CONTRIBUTING.md
+.claude/
+.agent/
+.qwen/
+.gemini/
+.cursor/
+.devcontainer/
+
+# --- Testing & Coverage ---
+htmlcov/
+.tox/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+nosetests.xml
+pytestdebug.log
+
+# --- Profiling & Debugging ---
+*.prof
+*.pyprof
+.profile
+.pytest_cache/
+nosetests.xml
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints
+*.ipynb
+
+# --- Local Development ---
+# ⚠️ NUNCA subir: contiene work personal, logs sensibles, documentación temporal
+local_work/
+local_work/**/*
+!local_work/.gitkeep
+tmp/
+temp/
+*.tmp
+
+# --- Pre-commit ---
+.secrets.baseline
+.pre-commit-cache/
+
+# --- Ruff Cache ---
+.ruff_cache/
+
+# --- Matplotlib Cache ---
+.fontcache/
+.texcache/
+
+# --- Trading Data (Sensitive) ---
+trades_*.json
+orders_*.json
+positions_*.json
+*.db
+*.sqlite

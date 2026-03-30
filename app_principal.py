@@ -507,14 +507,34 @@ class AplicacionPredictor:
         # Log inicial
         self.log("Sistema iniciado. Configure la API y el par de trading.", "info")
 
+        # Registrar handler de cierre limpio
+        self._after_hora_id = None
+        self.root.protocol("WM_DELETE_WINDOW", self.cerrar_aplicacion)
+
+    def cerrar_aplicacion(self):
+        """Shut down background threads and scheduled callbacks before destroying the window."""
+        # Detener loop de monitoreo
+        self.monitoreo_activo = False
+
+        # Cancelar callback periódico de hora
+        if self._after_hora_id is not None:
+            self.root.after_cancel(self._after_hora_id)
+            self._after_hora_id = None
+
+        # Cerrar figuras de matplotlib para liberar memoria
+        plt.close("all")
+
+        self.root.quit()
+        self.root.destroy()
+
     def update_hora_actual(self):
         """Actualiza la hora actual en la interfaz."""
         hora_actual = self.api.obtener_hora_gmt6()
         hora_str = hora_actual.strftime("%Y-%m-%d %H:%M:%S")
         self.hora_label.config(text=hora_str)
 
-        # Programar próxima actualización
-        self.root.after(1000, self.update_hora_actual)
+        # Programar próxima actualización y guardar ID para poder cancelarla
+        self._after_hora_id = self.root.after(1000, self.update_hora_actual)
 
     def guardar_configuracion(self):
         """Save API credentials and model settings to persistent configuration."""

@@ -1,0 +1,183 @@
+# ===========================================
+# GitHub Actions Workflow: Release ZIP
+# ===========================================
+# Creates a ZIP file with essential project files
+# Triggered on:
+#   - Release published
+#   - Manual dispatch (workflow_dispatch)
+#   - Push to main/master branch (optional)
+#
+# Files included in ZIP:
+#   - volume_sorted_coin_list.py
+#   - exchanges.py
+#   - requirements.txt
+#   - LICENSE
+#   - README.md
+#   - README.es.md
+# ===========================================
+
+name: 📦 Create Release ZIP
+
+on:
+  # Trigger on release published
+  release:
+    types: [published]
+
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: false
+        default: 'manual'
+
+  # Optional: Trigger on push to main branch
+  # push:
+  #   branches: [main, master]
+  #   paths:
+  #     - 'volume_sorted_coin_list.py'
+  #     - 'exchanges.py'
+  #     - 'requirements.txt'
+  #     - 'README.md'
+  #     - 'README.es.md'
+  #     - 'LICENSE'
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+      # ===========================================
+      # Step 1: Checkout repository
+      # ===========================================
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
+
+      # ===========================================
+      # Step 2: Determine version/tag
+      # ===========================================
+      - name: 🏷️ Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            # Use release tag
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            # Use manual input version
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Use date-based version
+            VERSION="build-$(date +%Y%m%d-%H%M)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
+
+      # ===========================================
+      # Step 3: Create distribution directory
+      # ===========================================
+      - name: 📁 Create distribution directory
+        run: |
+          mkdir -p dist
+          echo "Created dist/ directory"
+
+      # ===========================================
+      # Step 4: Copy files to distribution
+      # ===========================================
+      - name: 📋 Copy files to distribution
+        run: |
+          # List of files to include
+          FILES=(
+            "volume_sorted_coin_list.py"
+            "exchanges.py"
+            "requirements.txt"
+            "LICENSE"
+            "README.md"
+            "README.es.md"
+          )
+
+          # Copy each file
+          for file in "${FILES[@]}"; do
+            if [ -f "$file" ]; then
+              cp "$file" dist/
+              echo "✓ Copied: $file"
+            else
+              echo "✗ Missing: $file"
+            fi
+          done
+
+          # Copy .env.example (optional, useful for users)
+          if [ -f ".env.example" ]; then
+            cp ".env.example" dist/
+            echo "✓ Copied: .env.example"
+          fi
+
+          # Copy docs directory (optional)
+          if [ -d "docs" ]; then
+            cp -r docs dist/
+            echo "✓ Copied: docs/"
+          fi
+
+      # ===========================================
+      # Step 5: Create ZIP archive
+      # ===========================================
+      - name: 🗜️ Create ZIP archive
+        id: create-zip
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIP_NAME="coin-volume-list-${VERSION}.zip"
+
+          # Create ZIP file
+          cd dist
+          zip -r "../${ZIP_NAME}" ./*
+          cd ..
+
+          # Get file size
+          ZIP_SIZE=$(du -h "${ZIP_NAME}" | cut -f1)
+
+          # Set outputs
+          echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
+          echo "zip_size=${ZIP_SIZE}" >> $GITHUB_OUTPUT
+
+          echo "✓ Created: ${ZIP_NAME} (${ZIP_SIZE})"
+
+      # ===========================================
+      # Step 6: Upload as artifact
+      # ===========================================
+      - name: 📤 Upload ZIP as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coin-volume-list-${{ steps.version.outputs.version }}
+          path: ${{ steps.create-zip.outputs.zip_name }}
+          retention-days: 30
+          if-no-files-found: error
+
+      # ===========================================
+      # Step 7: Upload to release (if release event)
+      # ===========================================
+      - name: 📦 Upload to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.create-zip.outputs.zip_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ===========================================
+      # Step 8: Print summary
+      # ===========================================
+      - name: 📊 Print summary
+        run: |
+          echo "## 📦 Release ZIP Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**File:** ${{ steps.create-zip.outputs.zip_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Size:** ${{ steps.create-zip.outputs.zip_size }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Included:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          ls -1 dist/ >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
